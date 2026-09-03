@@ -25,6 +25,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety net: if an email confirmation link landed on any page (e.g. the
+    // project Site URL root) with tokens in the hash, pick them up explicitly.
+    const hash = window.location.hash;
+    if (hash.includes("access_token=")) {
+      const params = new URLSearchParams(hash.slice(1));
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      if (accessToken && refreshToken) {
+        void supabase.auth
+          .setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(() => {
+            window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          });
+      }
+    }
+
     const loadProfile = (userId: string) => {
       // deferred to avoid deadlocking the auth callback
       setTimeout(async () => {

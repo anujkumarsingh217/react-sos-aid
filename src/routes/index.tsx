@@ -1,24 +1,61 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
+import { IncidentCard } from "@/components/incident-card";
+import { SosButton } from "@/components/sos-button";
+import { incidents } from "@/lib/mock-data";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Community SOS — Real-time Emergency Coordination" },
+      {
+        name: "description",
+        content:
+          "Press one button to alert nearby volunteers and hospitals. Community SOS coordinates real-time emergency response in your neighborhood.",
+      },
+      { property: "og:title", content: "Community SOS — Real-time Emergency Coordination" },
+      {
+        property: "og:description",
+        content: "Press one button to alert nearby volunteers and hospitals in real time.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: HomePage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function HomePage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="px-4">
+      <SosButton />
+
+      <section aria-labelledby="nearby-heading">
+        <div className="flex items-center justify-between">
+          <h2 id="nearby-heading" className="text-base font-bold text-foreground">
+            Nearby active incidents
+          </h2>
+          <span className="flex items-center text-xs font-medium text-info">
+            View all <ChevronRight className="size-3.5" />
+          </span>
+        </div>
+        <div className="mt-3 space-y-3 pb-6">
+          {incidents.map((incident) => (
+            <IncidentCard key={incident.id} incident={incident} />
+          ))}
+        </div>
+      </section>
+
+      <p className="pb-6 text-center text-xs text-muted-foreground">
+        Not registered?{" "}
+        <Link to="/login" className="font-medium text-info">
+          Sign in
+        </Link>{" "}
+        or{" "}
+        <Link to="/register" className="font-medium text-info">
+          join as a volunteer
+        </Link>
+      </p>
     </div>
   );
 }

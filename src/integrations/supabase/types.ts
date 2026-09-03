@@ -111,13 +111,6 @@ export type Database = {
             foreignKeyName: "incident_participants_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "incident_participants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -159,13 +152,6 @@ export type Database = {
             foreignKeyName: "incidents_reporter_id_fkey"
             columns: ["reporter_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "incidents_reporter_id_fkey"
-            columns: ["reporter_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -199,13 +185,6 @@ export type Database = {
             columns: ["incident_id"]
             isOneToOne: false
             referencedRelation: "incidents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -254,13 +233,6 @@ export type Database = {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -289,6 +261,38 @@ export type Database = {
           srtext?: string | null
         }
         Relationships: []
+      }
+      user_contacts: {
+        Row: {
+          age: number | null
+          email: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          email?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          email?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_contacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_skills: {
         Row: {
@@ -320,13 +324,6 @@ export type Database = {
             foreignKeyName: "user_skills_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_skills_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -334,37 +331,28 @@ export type Database = {
       }
       users: {
         Row: {
-          age: number | null
           created_at: string
-          email: string | null
           id: string
           identity_verified: boolean
           name: string
-          phone: string | null
           phone_verified: boolean
           platform_user_id: string
           profession: string | null
         }
         Insert: {
-          age?: number | null
           created_at?: string
-          email?: string | null
           id: string
           identity_verified?: boolean
           name: string
-          phone?: string | null
           phone_verified?: boolean
           platform_user_id: string
           profession?: string | null
         }
         Update: {
-          age?: number | null
           created_at?: string
-          email?: string | null
           id?: string
           identity_verified?: boolean
           name?: string
-          phone?: string | null
           phone_verified?: boolean
           platform_user_id?: string
           profession?: string | null
@@ -391,13 +379,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "volunteer_status_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "volunteer_status_user_id_fkey"
             columns: ["user_id"]
@@ -448,33 +429,6 @@ export type Database = {
           f_table_schema?: unknown
           srid?: number | null
           type?: string | null
-        }
-        Relationships: []
-      }
-      public_profiles: {
-        Row: {
-          id: string | null
-          identity_verified: boolean | null
-          name: string | null
-          phone_verified: boolean | null
-          platform_user_id: string | null
-          profession: string | null
-        }
-        Insert: {
-          id?: string | null
-          identity_verified?: boolean | null
-          name?: string | null
-          phone_verified?: boolean | null
-          platform_user_id?: string | null
-          profession?: string | null
-        }
-        Update: {
-          id?: string | null
-          identity_verified?: boolean | null
-          name?: string | null
-          phone_verified?: boolean | null
-          platform_user_id?: string | null
-          profession?: string | null
         }
         Relationships: []
       }

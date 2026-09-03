@@ -1,6 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Home, Hospital, ShieldCheck, User } from "lucide-react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Activity, Home, Hospital, LogOut, ShieldCheck, User } from "lucide-react";
 import type { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -16,6 +17,13 @@ const bareRoutes = ["/login", "/register"];
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const bare = bareRoutes.includes(pathname);
+  const { user, name, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login", replace: true });
+  };
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col border-x border-border bg-background">
@@ -26,14 +34,30 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
           <div className="leading-tight">
             <p className="text-sm font-bold tracking-tight text-foreground">Community SOS</p>
-            <p className="text-[11px] text-muted-foreground">Emergency coordination network</p>
+            <p className="text-[11px] text-muted-foreground">
+              {user ? `Signed in as ${name ?? user.email}` : "Emergency coordination network"}
+            </p>
           </div>
-          <span className="ml-auto flex items-center gap-1.5 rounded-full bg-safe/15 px-2.5 py-1 text-[11px] font-medium text-safe">
-            <span className="size-1.5 animate-pulse rounded-full bg-safe" />
-            Live
-          </span>
+          {user ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="ml-auto flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-sos"
+            >
+              <LogOut className="size-3.5" />
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="ml-auto rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-info"
+            >
+              Sign in
+            </Link>
+          )}
         </header>
       )}
+
 
       <main className={cn("flex-1", !bare && "pb-20")}>{children}</main>
 

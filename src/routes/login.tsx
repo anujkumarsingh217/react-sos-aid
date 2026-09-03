@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Activity } from "lucide-react";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { AuthField } from "@/components/auth-field";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -18,7 +19,28 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const onSubmit = (e: FormEvent) => e.preventDefault(); // placeholder until auth is wired
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+
+    const form = new FormData(e.currentTarget);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: String(form.get("email") ?? "").trim(),
+      password: String(form.get("password") ?? ""),
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setBusy(false);
+      return;
+    }
+    navigate({ to: "/" });
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
@@ -35,11 +57,15 @@ function LoginPage() {
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <AuthField id="email" label="Email" type="email" placeholder="you@example.com" />
         <AuthField id="password" label="Password" type="password" placeholder="••••••••" />
+
+        {error && <p className="text-sm font-medium text-sos">{error}</p>}
+
         <button
           type="submit"
-          className="w-full rounded-xl bg-info py-3 text-sm font-bold text-info-foreground transition-opacity hover:opacity-90"
+          disabled={busy}
+          className="w-full rounded-xl bg-info py-3 text-sm font-bold text-info-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          Sign in
+          {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
 

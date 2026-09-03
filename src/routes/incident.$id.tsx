@@ -20,7 +20,7 @@ export const Route = createFileRoute("/incident/$id")({
 
 function IncidentRoom() {
   const { id } = Route.useParams();
-  const incident = incidents.find((i) => i.id === id) ?? incidents[0];
+  const incident = incidents.find((i) => i.id === id) ?? incidents[0]!;
 
   const onSend = (e: FormEvent) => e.preventDefault(); // placeholder until chat is wired
 

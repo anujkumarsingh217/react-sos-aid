@@ -22,7 +22,6 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {

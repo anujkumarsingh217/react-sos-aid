@@ -50,13 +50,48 @@ function RegisterPage() {
 
     savePendingProfile({ name, email, phone, age: ageRaw ? Number(ageRaw) : null });
 
-    if (data.session) {
-      navigate({ to: "/onboarding" });
-    } else {
-      setPendingEmail(email);
+    if (!data.session) {
+      // Email confirmation was expected to be off; if a session is still
+      // missing, ask the user to sign in instead.
+      setError("Account created — please sign in to continue.");
+      setBusy(false);
+      navigate({ to: "/login" });
+      return;
     }
+
+    navigate({ to: "/onboarding" });
     setBusy(false);
   };
+
+  return (
+    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
+      <div className="flex items-center gap-2">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-sos">
+          <Activity className="size-6 text-sos-foreground" strokeWidth={2.5} />
+        </span>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Join the network</h1>
+          <p className="text-xs text-muted-foreground">Help your community when it matters most</p>
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-8 space-y-4">
+        <AuthField id="name" label="Full name" type="text" placeholder="Ananya Roy" />
+        <AuthField id="email" label="Email" type="email" placeholder="you@example.com" />
+        <AuthField id="phone" label="Phone" type="tel" placeholder="+91 98765 43210" />
+        <AuthField id="age" label="Age" type="number" placeholder="28" required={false} />
+        <AuthField id="password" label="Password" type="password" placeholder="Min. 6 characters" />
+
+        {error && <p className="text-sm font-medium text-sos">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-xl bg-sos py-3 text-sm font-bold text-sos-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+        >
+          {busy ? "Creating account…" : "Create account"}
+        </button>
+      </form>
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">

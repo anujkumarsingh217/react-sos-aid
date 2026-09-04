@@ -22,7 +22,6 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -51,11 +50,16 @@ function RegisterPage() {
 
     savePendingProfile({ name, email, phone, age: ageRaw ? Number(ageRaw) : null });
 
-    if (data.session) {
-      navigate({ to: "/onboarding" });
-    } else {
-      setPendingEmail(email);
+    if (!data.session) {
+      // Email confirmation was expected to be off; if a session is still
+      // missing, ask the user to sign in instead.
+      setError("Account created — please sign in to continue.");
+      setBusy(false);
+      navigate({ to: "/login" });
+      return;
     }
+
+    navigate({ to: "/onboarding" });
     setBusy(false);
   };
 
@@ -71,36 +75,23 @@ function RegisterPage() {
         </div>
       </div>
 
-      {pendingEmail ? (
-        <div className="mt-8 rounded-xl border border-border bg-card p-4 text-sm text-foreground">
-          <p className="font-semibold">Check your email</p>
-          <p className="mt-1 text-muted-foreground">
-            We sent a confirmation link to {pendingEmail}. Your profile is saved as soon as you confirm
-            and sign in.
-          </p>
-          <Link to="/login" className="mt-3 inline-block font-semibold text-info">
-            Go to sign in
-          </Link>
-        </div>
-      ) : (
-        <form onSubmit={onSubmit} className="mt-8 space-y-4">
-          <AuthField id="name" label="Full name" type="text" placeholder="Ananya Roy" />
-          <AuthField id="email" label="Email" type="email" placeholder="you@example.com" />
-          <AuthField id="phone" label="Phone" type="tel" placeholder="+91 98765 43210" />
-          <AuthField id="age" label="Age" type="number" placeholder="28" required={false} />
-          <AuthField id="password" label="Password" type="password" placeholder="Min. 6 characters" />
+      <form onSubmit={onSubmit} className="mt-8 space-y-4">
+        <AuthField id="name" label="Full name" type="text" placeholder="Ananya Roy" />
+        <AuthField id="email" label="Email" type="email" placeholder="you@example.com" />
+        <AuthField id="phone" label="Phone" type="tel" placeholder="+91 98765 43210" />
+        <AuthField id="age" label="Age" type="number" placeholder="28" required={false} />
+        <AuthField id="password" label="Password" type="password" placeholder="Min. 6 characters" />
 
-          {error && <p className="text-sm font-medium text-sos">{error}</p>}
+        {error && <p className="text-sm font-medium text-sos">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-xl bg-sos py-3 text-sm font-bold text-sos-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-          >
-            {busy ? "Creating account…" : "Create account"}
-          </button>
-        </form>
-      )}
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-xl bg-sos py-3 text-sm font-bold text-sos-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+        >
+          {busy ? "Creating account…" : "Create account"}
+        </button>
+      </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already registered?{" "}

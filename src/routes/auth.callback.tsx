@@ -27,7 +27,7 @@ function AuthCallbackPage() {
       const { data: existing } = await supabase.auth.getSession();
       if (existing.session) {
         window.history.replaceState(null, "", window.location.pathname);
-        navigate({ to: "/" });
+        navigate({ to: "/onboarding" });
         return;
       }
 
@@ -48,7 +48,7 @@ function AuthCallbackPage() {
           return;
         }
         window.history.replaceState(null, "", window.location.pathname);
-        navigate({ to: "/" });
+        navigate({ to: "/onboarding" });
         return;
       }
 
@@ -60,7 +60,7 @@ function AuthCallbackPage() {
           setError(exchangeError.message);
           return;
         }
-        navigate({ to: "/" });
+        navigate({ to: "/onboarding" });
         return;
       }
 

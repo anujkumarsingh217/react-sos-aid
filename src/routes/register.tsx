@@ -52,7 +52,7 @@ function RegisterPage() {
     savePendingProfile({ name, email, phone, age: ageRaw ? Number(ageRaw) : null });
 
     if (data.session) {
-      navigate({ to: "/" });
+      navigate({ to: "/onboarding" });
     } else {
       setPendingEmail(email);
     }

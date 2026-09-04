@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BadgeCheck, Briefcase, IdCard } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SkillBadge } from "@/components/skill-badge";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +21,64 @@ export const Route = createFileRoute("/profile")({
   component: ProfilePage,
 });
 
+interface ProfileRow {
+  name: string;
+  platform_user_id: string;
+  profession: string | null;
+  identity_verified: boolean;
+  phone_verified: boolean;
+}
+
+interface SkillRow {
+  id: string;
+  skill_name: string;
+  status: string;
+}
+
 function ProfilePage() {
+  const { user } = useAuth();
   const [volunteerMode, setVolunteerMode] = useState(currentUser.volunteerMode);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [skills, setSkills] = useState<SkillRow[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      setSkills([]);
+      return;
+    }
+    let active = true;
+    void (async () => {
+      const [{ data: p }, { data: s }] = await Promise.all([
+        supabase
+          .from("users")
+          .select("name, platform_user_id, profession, identity_verified, phone_verified")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("user_skills")
+          .select("id, skill_name, status")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true }),
+      ]);
+      if (!active) return;
+      setProfile((p as ProfileRow) ?? null);
+      setSkills((s as SkillRow[]) ?? []);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  const name = profile?.name ?? currentUser.name;
+  const platformId = profile?.platform_user_id ?? currentUser.platformId;
+  const profession = profile?.profession ?? (profile ? "Not set" : currentUser.profession);
+  const badges = profile
+    ? [
+        ...(profile.identity_verified ? ["Identity Verified"] : []),
+        ...(profile.phone_verified ? ["Phone Verified"] : []),
+      ]
+    : currentUser.badges;
 
   return (
     <div className="space-y-6 px-4 py-5">
@@ -27,18 +86,20 @@ function ProfilePage() {
       <section className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-3">
           <span className="flex size-14 items-center justify-center rounded-full bg-info-muted text-lg font-bold text-info">
-            {currentUser.name.split(" ").map((n) => n[0]).join("")}
+            {name.split(" ").map((n) => n[0]).join("")}
           </span>
           <div>
             <h1 className="flex items-center gap-1.5 text-lg font-bold text-card-foreground">
-              {currentUser.name}
-              {currentUser.verified && <BadgeCheck className="size-5 text-info" />}
+              {name}
+              {(profile?.identity_verified ?? currentUser.verified) && (
+                <BadgeCheck className="size-5 text-info" />
+              )}
             </h1>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <IdCard className="size-3.5" /> Platform ID: {currentUser.platformId}
+              <IdCard className="size-3.5" /> Platform ID: {platformId}
             </p>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Briefcase className="size-3.5" /> {currentUser.profession}
+              <Briefcase className="size-3.5" /> {profession}
             </p>
           </div>
         </div>
@@ -82,7 +143,10 @@ function ProfilePage() {
       <section>
         <h2 className="text-sm font-bold text-foreground">Verification badges</h2>
         <div className="mt-2 flex flex-wrap gap-2">
-          {currentUser.badges.map((badge) => (
+          {badges.length === 0 && (
+            <p className="text-xs text-muted-foreground">No verifications yet.</p>
+          )}
+          {badges.map((badge) => (
             <span
               key={badge}
               className="flex items-center gap-1 rounded-full bg-info-muted px-3 py-1.5 text-xs font-medium text-info"
@@ -98,14 +162,19 @@ function ProfilePage() {
       <section className="pb-4">
         <h2 className="text-sm font-bold text-foreground">Skills</h2>
         <div className="mt-2 flex flex-wrap gap-2">
-          {currentUser.skills.map((skill) => (
-            <span
-              key={skill}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-card-foreground"
-            >
-              {skill}
-            </span>
-          ))}
+          {profile ? (
+            skills.length ? (
+              skills.map((s) => (
+                <SkillBadge key={s.id} name={s.skill_name} status={s.status} />
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">No skills added yet.</p>
+            )
+          ) : (
+            currentUser.skills.map((skill) => (
+              <SkillBadge key={skill} name={skill} status="self_declared" />
+            ))
+          )}
         </div>
       </section>
     </div>

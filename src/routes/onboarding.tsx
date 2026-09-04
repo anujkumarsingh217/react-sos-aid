@@ -270,7 +270,7 @@ function SkillsStep() {
                 <span
                   className={cn(
                     "flex size-5 items-center justify-center rounded-md border",
-                    status ? "border-info bg-info text-white" : "border-input"
+                    status ? "border-info bg-info text-info-foreground" : "border-input"
                   )}
                 >
                   {status && <BadgeCheck className="size-3.5" />}
@@ -288,8 +288,8 @@ function SkillsStep() {
                         "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                         status === s
                           ? s === "certified"
-                            ? "bg-safe text-white"
-                            : "bg-info text-white"
+                            ? "bg-safe text-safe-foreground"
+                            : "bg-info text-info-foreground"
                           : "border border-border bg-card text-muted-foreground"
                       )}
                     >

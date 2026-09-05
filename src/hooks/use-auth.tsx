@@ -1,5 +1,5 @@
 import type { Session, User } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ensurePendingProfile } from "@/lib/profile";
 
@@ -26,21 +26,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [name, setName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = (userId: string) => {
+  const loadProfile = useCallback((userId: string) => {
     // Keep database work outside the auth callback to avoid blocking it.
     setTimeout(async () => {
       await ensurePendingProfile(userId);
       const { data } = await supabase.from("users").select("name").eq("id", userId).maybeSingle();
       setName(data?.name ?? null);
     }, 0);
-  };
+  }, []);
 
-  const applySession = (nextSession: Session | null) => {
+  const applySession = useCallback((nextSession: Session | null) => {
     setSession(nextSession);
     setLoading(false);
     if (nextSession?.user) loadProfile(nextSession.user.id);
     else setName(null);
-  };
+  }, [loadProfile]);
 
   useEffect(() => {
     // Safety net: if an email confirmation link landed on any page (e.g. the
@@ -69,9 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [applySession]);
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     const { data, error } = await supabase.auth.getSession();
     if (error) {
       console.error("[auth] session refresh failed", error.message);
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     applySession(data.session);
     return data.session;
-  };
+  }, [applySession]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

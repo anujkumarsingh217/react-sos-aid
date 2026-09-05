@@ -142,25 +142,36 @@ function PhoneStep({ onDone }: { onDone: () => void }) {
 function IdentityStep({ onDone }: { onDone: () => void }) {
   const { user } = useAuth();
   const [platformId, setPlatformId] = useState<string | null>(null);
-  const started = useRef(false);
+  const userRef = useRef(user);
+  userRef.current = user;
 
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-
+    // Schedule once on mount; read the latest user via ref so auth-state
+    // re-renders never clear the pending timer.
     const timer = setTimeout(async () => {
       const id = makeUserId();
-      if (user) {
-        await supabase
-          .from("users")
-          .update({ identity_verified: true, platform_user_id: id })
-          .eq("id", user.id);
+      const currentUser = userRef.current;
+      if (currentUser) {
+        try {
+          await supabase
+            .from("users")
+            .update({ identity_verified: true, platform_user_id: id })
+            .eq("id", currentUser.id);
+        } catch {
+          // Simulated verification — continue even if the save fails.
+        }
       }
       setPlatformId(id);
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [user]);
+  }, []);
+
+  useEffect(() => {
+    if (!platformId) return;
+    const advance = setTimeout(onDone, 1600);
+    return () => clearTimeout(advance);
+  }, [platformId, onDone]);
 
   return (
     <section className="mt-10">

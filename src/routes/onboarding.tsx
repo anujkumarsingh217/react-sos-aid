@@ -43,13 +43,23 @@ function makeUserId() {
 }
 
 function OnboardingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshSession } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [loading, user, navigate]);
+    if (loading || user) return;
+
+    let active = true;
+    void refreshSession().then((storedSession) => {
+      console.info("[onboarding] auth check", { hasSession: Boolean(storedSession) });
+      if (active && !storedSession) navigate({ to: "/login", replace: true });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [loading, user, refreshSession, navigate]);
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">

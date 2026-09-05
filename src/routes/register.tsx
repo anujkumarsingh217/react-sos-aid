@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Activity } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { AuthField } from "@/components/auth-field";
+import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { savePendingProfile } from "@/lib/profile";
 
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { refreshSession } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -42,6 +44,12 @@ function RegisterPage() {
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
 
+    console.info("[signup] request completed", {
+      hasUser: Boolean(data.user),
+      hasSession: Boolean(data.session),
+      hasError: Boolean(signUpError),
+    });
+
     if (signUpError) {
       setError(signUpError.message);
       setBusy(false);
@@ -50,21 +58,32 @@ function RegisterPage() {
 
     savePendingProfile({ name, email, phone, age: ageRaw ? Number(ageRaw) : null });
 
-    // With email confirmation disabled, signUp should return a session. If it
-    // doesn't, automatically sign the user in so they go straight to onboarding.
-    if (!data.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+    let authenticatedSession = data.session;
+    if (!authenticatedSession) {
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (signInError) {
-        setError("Account created — please sign in to continue.");
+        setError(signInError.message);
         setBusy(false);
-        navigate({ to: "/login" });
         return;
       }
+      authenticatedSession = signInData.session;
     }
 
+    const currentSession = authenticatedSession ?? (await refreshSession());
+    console.info("[signup] redirect decision", {
+      destination: currentSession ? "/onboarding" : "stay-on-register",
+      hasSession: Boolean(currentSession),
+    });
+    if (!currentSession) {
+      setError("Your account was created, but a session could not be started. Please try again.");
+      setBusy(false);
+      return;
+    }
+
+    await refreshSession();
     navigate({ to: "/onboarding" });
     setBusy(false);
   };

@@ -50,13 +50,19 @@ function RegisterPage() {
 
     savePendingProfile({ name, email, phone, age: ageRaw ? Number(ageRaw) : null });
 
+    // With email confirmation disabled, signUp should return a session. If it
+    // doesn't, automatically sign the user in so they go straight to onboarding.
     if (!data.session) {
-      // Email confirmation was expected to be off; if a session is still
-      // missing, ask the user to sign in instead.
-      setError("Account created — please sign in to continue.");
-      setBusy(false);
-      navigate({ to: "/login" });
-      return;
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) {
+        setError("Account created — please sign in to continue.");
+        setBusy(false);
+        navigate({ to: "/login" });
+        return;
+      }
     }
 
     navigate({ to: "/onboarding" });

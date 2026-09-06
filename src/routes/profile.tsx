@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { saveVolunteerStatus } from "@/lib/volunteer";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -49,7 +51,7 @@ function ProfilePage() {
     }
     let active = true;
     void (async () => {
-      const [{ data: p }, { data: s }] = await Promise.all([
+      const [{ data: p }, { data: s }, { data: v }] = await Promise.all([
         supabase
           .from("users")
           .select("name, platform_user_id, profession, identity_verified, phone_verified")
@@ -60,10 +62,16 @@ function ProfilePage() {
           .select("id, skill_name, status")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true }),
+        supabase
+          .from("volunteer_status")
+          .select("is_volunteer, availability")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
       if (!active) return;
       setProfile((p as ProfileRow) ?? null);
       setSkills((s as SkillRow[]) ?? []);
+      setVolunteerMode(Boolean(v?.is_volunteer && v.availability === "available"));
     })();
     return () => {
       active = false;
@@ -124,7 +132,19 @@ function ProfilePage() {
           type="button"
           role="switch"
           aria-checked={volunteerMode}
-          onClick={() => setVolunteerMode((v) => !v)}
+          onClick={() => {
+            const next = !volunteerMode;
+            setVolunteerMode(next);
+            if (!user) return;
+            void saveVolunteerStatus(user.id, next).then(({ ok, located }) => {
+              if (!ok) {
+                setVolunteerMode(!next);
+                toast.error("Couldn't update volunteer mode.");
+              } else if (next && !located) {
+                toast.warning("Volunteer mode on, but location is off — you won't match nearby alerts.");
+              }
+            });
+          }}
           className={cn(
             "relative h-7 w-12 rounded-full transition-colors",
             volunteerMode ? "bg-safe" : "bg-muted"

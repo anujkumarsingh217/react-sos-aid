@@ -199,25 +199,31 @@ export type Database = {
       notifications: {
         Row: {
           created_at: string
+          distance_m: number | null
           id: string
           incident_id: string | null
           read: boolean
+          response: string
           type: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          distance_m?: number | null
           id?: string
           incident_id?: string | null
           read?: boolean
+          response?: string
           type: string
           user_id: string
         }
         Update: {
           created_at?: string
+          distance_m?: number | null
           id?: string
           incident_id?: string | null
           read?: boolean
+          response?: string
           type?: string
           user_id?: string
         }
@@ -364,18 +370,21 @@ export type Database = {
           availability: string
           is_volunteer: boolean
           last_updated: string
+          location: unknown
           user_id: string
         }
         Insert: {
           availability?: string
           is_volunteer?: boolean
           last_updated?: string
+          location?: unknown
           user_id: string
         }
         Update: {
           availability?: string
           is_volunteer?: boolean
           last_updated?: string
+          location?: unknown
           user_id?: string
         }
         Relationships: [
@@ -698,6 +707,14 @@ export type Database = {
         Returns: boolean
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      match_volunteers: {
+        Args: { _incident_id: string }
+        Returns: {
+          distance_m: number
+          name: string
+          user_id: string
+        }[]
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -738,6 +755,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      skills_for_category: { Args: { _category: string }; Returns: string[] }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown

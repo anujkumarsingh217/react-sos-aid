@@ -59,6 +59,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
 
+      {!bare && <VolunteerAlerts />}
+
       <main className={cn("flex-1", !bare && "pb-20")}>{children}</main>
 
       {!bare && (

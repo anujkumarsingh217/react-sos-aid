@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { notifyNearbyVolunteers } from "@/lib/volunteer";
 
 const CATEGORIES = [
   "Road Accident",

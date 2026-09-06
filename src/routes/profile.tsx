@@ -51,7 +51,7 @@ function ProfilePage() {
     }
     let active = true;
     void (async () => {
-      const [{ data: p }, { data: s }] = await Promise.all([
+      const [{ data: p }, { data: s }, { data: v }] = await Promise.all([
         supabase
           .from("users")
           .select("name, platform_user_id, profession, identity_verified, phone_verified")
@@ -62,10 +62,16 @@ function ProfilePage() {
           .select("id, skill_name, status")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true }),
+        supabase
+          .from("volunteer_status")
+          .select("is_volunteer, availability")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
       if (!active) return;
       setProfile((p as ProfileRow) ?? null);
       setSkills((s as SkillRow[]) ?? []);
+      setVolunteerMode(Boolean(v?.is_volunteer && v.availability === "available"));
     })();
     return () => {
       active = false;

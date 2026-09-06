@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { saveVolunteerStatus } from "@/lib/volunteer";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -124,7 +126,19 @@ function ProfilePage() {
           type="button"
           role="switch"
           aria-checked={volunteerMode}
-          onClick={() => setVolunteerMode((v) => !v)}
+          onClick={() => {
+            const next = !volunteerMode;
+            setVolunteerMode(next);
+            if (!user) return;
+            void saveVolunteerStatus(user.id, next).then(({ ok, located }) => {
+              if (!ok) {
+                setVolunteerMode(!next);
+                toast.error("Couldn't update volunteer mode.");
+              } else if (next && !located) {
+                toast.warning("Volunteer mode on, but location is off — you won't match nearby alerts.");
+              }
+            });
+          }}
           className={cn(
             "relative h-7 w-12 rounded-full transition-colors",
             volunteerMode ? "bg-safe" : "bg-muted"

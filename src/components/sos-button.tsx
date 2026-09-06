@@ -104,7 +104,13 @@ export function SosButton() {
       role: "reporter",
     });
 
-    toast.success("SOS sent — help is being coordinated.");
+    // Alert the closest matching volunteers within 2km.
+    const matched = await notifyNearbyVolunteers(data.id);
+    toast.success(
+      matched.length
+        ? `SOS sent — alerting ${matched.length} nearby volunteer${matched.length > 1 ? "s" : ""}.`
+        : "SOS sent — help is being coordinated.",
+    );
     reset();
     navigate({ to: "/incident/$id", params: { id: data.id } });
   };

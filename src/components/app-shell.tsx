@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Activity, Home, Hospital, LogOut, ShieldCheck, User } from "lucide-react";
 import type { ReactNode } from "react";
+import { VolunteerAlerts } from "@/components/volunteer-alerts";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 

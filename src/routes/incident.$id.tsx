@@ -57,6 +57,7 @@ function IncidentRoom() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +199,17 @@ function IncidentRoom() {
           <Users className="size-3.5" /> {responders}
         </span>
       </div>
+
+      {user?.id === incident.reporter_id && incident.status !== "resolved" && (
+        <button
+          type="button"
+          disabled={resolving}
+          onClick={onResolve}
+          className="mt-3 w-full rounded-xl bg-safe py-2.5 text-sm font-bold text-safe-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+        >
+          {resolving ? "Marking resolved…" : "✓ Mark Resolved"}
+        </button>
+      )}
 
       {/* Map */}
       <div className="mt-4">

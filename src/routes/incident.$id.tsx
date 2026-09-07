@@ -14,6 +14,7 @@ interface IncidentRow {
   status: string;
   created_at: string;
   location: unknown;
+  reporter_id: string;
 }
 
 interface MessageRow {
@@ -56,6 +57,7 @@ function IncidentRoom() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +65,7 @@ function IncidentRoom() {
     async function load() {
       const { data, error } = await supabase
         .from("incidents")
-        .select("id, category, description, priority, status, created_at, location")
+        .select("id, category, description, priority, status, created_at, location, reporter_id")
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
@@ -147,6 +149,22 @@ function IncidentRoom() {
     );
   };
 
+  const onResolve = async () => {
+    if (!user || resolving || !incident) return;
+    setResolving(true);
+    const { error } = await supabase
+      .from("incidents")
+      .update({ status: "resolved" })
+      .eq("id", incident.id);
+    setResolving(false);
+    if (error) {
+      toast.error("Couldn't mark this incident resolved — only the reporter can do that.");
+      return;
+    }
+    setIncident({ ...incident, status: "resolved" });
+    toast.success("Incident marked as resolved.");
+  };
+
   if (loading) {
     return <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading incident…</p>;
   }
@@ -197,6 +215,17 @@ function IncidentRoom() {
           <Users className="size-3.5" /> {responders}
         </span>
       </div>
+
+      {user?.id === incident.reporter_id && incident.status !== "resolved" && (
+        <button
+          type="button"
+          disabled={resolving}
+          onClick={onResolve}
+          className="mt-3 w-full rounded-xl bg-safe py-2.5 text-sm font-bold text-safe-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+        >
+          {resolving ? "Marking resolved…" : "✓ Mark Resolved"}
+        </button>
+      )}
 
       {/* Map */}
       <div className="mt-4">

@@ -14,6 +14,7 @@ interface IncidentRow {
   status: string;
   created_at: string;
   location: unknown;
+  reporter_id: string;
 }
 
 interface MessageRow {
@@ -63,7 +64,7 @@ function IncidentRoom() {
     async function load() {
       const { data, error } = await supabase
         .from("incidents")
-        .select("id, category, description, priority, status, created_at, location")
+        .select("id, category, description, priority, status, created_at, location, reporter_id")
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;

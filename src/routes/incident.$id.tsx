@@ -149,6 +149,22 @@ function IncidentRoom() {
     );
   };
 
+  const onResolve = async () => {
+    if (!user || resolving || !incident) return;
+    setResolving(true);
+    const { error } = await supabase
+      .from("incidents")
+      .update({ status: "resolved" })
+      .eq("id", incident.id);
+    setResolving(false);
+    if (error) {
+      toast.error("Couldn't mark this incident resolved — only the reporter can do that.");
+      return;
+    }
+    setIncident({ ...incident, status: "resolved" });
+    toast.success("Incident marked as resolved.");
+  };
+
   if (loading) {
     return <p className="px-4 py-10 text-center text-sm text-muted-foreground">Loading incident…</p>;
   }

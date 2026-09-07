@@ -702,6 +702,19 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      hospital_incidents: {
+        Args: { _hospital_id: string; _radius_m?: number }
+        Returns: {
+          acknowledged_at: string
+          category: string
+          created_at: string
+          description: string
+          distance_m: number
+          id: string
+          priority: string
+          status: string
+        }[]
+      }
       is_incident_participant: {
         Args: { _incident_id: string; _user_id: string }
         Returns: boolean
@@ -713,6 +726,16 @@ export type Database = {
           distance_m: number
           name: string
           user_id: string
+        }[]
+      }
+      nearby_hospitals: {
+        Args: { _incident_id: string; _radius_m?: number }
+        Returns: {
+          contact_info: string
+          distance_m: number
+          id: string
+          is_connected: boolean
+          name: string
         }[]
       }
       populate_geometry_columns:

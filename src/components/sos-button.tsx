@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { nearbyHospitals } from "@/lib/hospitals";
 import { notifyNearbyVolunteers } from "@/lib/volunteer";
 
 const CATEGORIES = [
@@ -106,11 +107,16 @@ export function SosButton() {
     });
 
     // Alert the closest matching volunteers within 2km.
-    const matched = await notifyNearbyVolunteers(data.id);
+    const [matched, hospitals] = await Promise.all([
+      notifyNearbyVolunteers(data.id),
+      nearbyHospitals(data.id),
+    ]);
+    const parts = [
+      matched.length ? `${matched.length} volunteer${matched.length > 1 ? "s" : ""}` : null,
+      hospitals.length ? `${hospitals.length} hospital${hospitals.length > 1 ? "s" : ""}` : null,
+    ].filter(Boolean);
     toast.success(
-      matched.length
-        ? `SOS sent — alerting ${matched.length} nearby volunteer${matched.length > 1 ? "s" : ""}.`
-        : "SOS sent — help is being coordinated.",
+      parts.length ? `SOS sent — alerting ${parts.join(" and ")} nearby.` : "SOS sent — help is being coordinated.",
     );
     reset();
     navigate({ to: "/incident/$id", params: { id: data.id } });

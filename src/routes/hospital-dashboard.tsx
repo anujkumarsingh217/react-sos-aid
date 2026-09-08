@@ -135,10 +135,39 @@ function HospitalDashboard() {
         {hospitals.map((h) => (
           <option key={h.id} value={h.id} disabled={!h.is_connected}>
             {h.name}
-            {h.is_connected ? "" : " (not connected)"}
+            {h.is_connected ? " — connected" : " — not connected"}
           </option>
         ))}
       </select>
+
+      {/* Network roster: connected vs non-connected at a glance */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {hospitals.length === 0 && (
+          <p className="text-[11px] text-muted-foreground">Loading hospital network…</p>
+        )}
+        {hospitals.map((h) => (
+          <span
+            key={h.id}
+            className={cn(
+              "inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+              h.is_connected
+                ? "bg-safe/15 text-safe ring-1 ring-safe/40"
+                : "border border-dashed border-border bg-muted text-muted-foreground",
+            )}
+          >
+            <span
+              className={cn(
+                "size-2 shrink-0 rounded-full",
+                h.is_connected ? "animate-pulse bg-safe" : "bg-muted-foreground/50",
+              )}
+            />
+            <span className="truncate">{h.name}</span>
+            <span className="shrink-0 opacity-80">
+              {h.is_connected ? "Live" : "Offline"}
+            </span>
+          </span>
+        ))}
+      </div>
 
       {hospital && (
         <p className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-info">
@@ -146,6 +175,7 @@ function HospitalDashboard() {
           Live feed connected{hospital.contact_info ? ` · ${hospital.contact_info}` : ""}
         </p>
       )}
+
 
       <div className="mt-4 space-y-4 pb-6">
         {loading ? (

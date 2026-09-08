@@ -38,18 +38,22 @@ interface SkillRow {
 }
 
 function ProfilePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [volunteerMode, setVolunteerMode] = useState(currentUser.volunteerMode);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [skills, setSkills] = useState<SkillRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       setProfile(null);
       setSkills([]);
+      setLoading(false);
       return;
     }
     let active = true;
+    setLoading(true);
     void (async () => {
       const [{ data: p }, { data: s }, { data: v }] = await Promise.all([
         supabase
@@ -72,11 +76,23 @@ function ProfilePage() {
       setProfile((p as ProfileRow) ?? null);
       setSkills((s as SkillRow[]) ?? []);
       setVolunteerMode(Boolean(v?.is_volunteer && v.availability === "available"));
+      setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [authLoading, user]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="space-y-4 px-4 py-5">
+        <div className="h-24 animate-pulse rounded-xl border border-border bg-muted/50" />
+        <div className="h-20 animate-pulse rounded-xl border border-border bg-muted/50" />
+        <div className="h-28 animate-pulse rounded-xl border border-border bg-muted/50" />
+      </div>
+    );
+  }
+
 
   const name = profile?.name ?? currentUser.name;
   const platformId = profile?.platform_user_id ?? currentUser.platformId;

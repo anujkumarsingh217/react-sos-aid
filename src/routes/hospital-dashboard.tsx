@@ -47,19 +47,23 @@ function HospitalDashboard() {
   const [hospitalId, setHospitalId] = useState<string>("");
   const [incidents, setIncidents] = useState<HospitalIncident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hospitalsLoading, setHospitalsLoading] = useState(true);
   const [pending, setPending] = useState<string | null>(null);
 
   const hospital = hospitals.find((h) => h.id === hospitalId) ?? null;
 
   useEffect(() => {
+    setHospitalsLoading(true);
     void (async () => {
       const rows = await listHospitals();
       setHospitals(rows);
+      setHospitalsLoading(false);
       const connected = rows.find((h) => h.is_connected);
       if (connected) setHospitalId(connected.id);
       else setLoading(false);
     })();
   }, [user]);
+
 
   const refresh = useCallback(
     async (announce = false) => {
@@ -131,14 +135,51 @@ function HospitalDashboard() {
         onChange={(e) => setHospitalId(e.target.value)}
         className="mt-1 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm focus:border-info focus:outline-none focus:ring-2 focus:ring-info/25"
       >
-        {hospitals.length === 0 && <option value="">No hospitals registered</option>}
+        {hospitals.length === 0 && (
+          <option value="">
+            {hospitalsLoading ? "Loading hospitals…" : "No hospitals available — sign in to view"}
+          </option>
+        )}
         {hospitals.map((h) => (
           <option key={h.id} value={h.id} disabled={!h.is_connected}>
             {h.name}
-            {h.is_connected ? "" : " (not connected)"}
+            {h.is_connected ? " — connected" : " — not connected"}
           </option>
         ))}
       </select>
+
+      {/* Network roster: connected vs non-connected at a glance */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {hospitals.length === 0 && (
+          <p className="text-[11px] text-muted-foreground">
+            {hospitalsLoading
+              ? "Loading hospital network…"
+              : "No hospitals to show yet. Sign in to see the connected network."}
+          </p>
+        )}
+        {hospitals.map((h) => (
+          <span
+            key={h.id}
+            className={cn(
+              "inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+              h.is_connected
+                ? "bg-safe/15 text-safe ring-1 ring-safe/40"
+                : "border border-dashed border-border bg-muted text-muted-foreground",
+            )}
+          >
+            <span
+              className={cn(
+                "size-2 shrink-0 rounded-full",
+                h.is_connected ? "animate-pulse bg-safe" : "bg-muted-foreground/50",
+              )}
+            />
+            <span className="truncate">{h.name}</span>
+            <span className="shrink-0 opacity-80">
+              {h.is_connected ? "Live" : "Offline"}
+            </span>
+          </span>
+        ))}
+      </div>
 
       {hospital && (
         <p className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-info">
@@ -147,13 +188,25 @@ function HospitalDashboard() {
         </p>
       )}
 
+
       <div className="mt-4 space-y-4 pb-6">
         {loading ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">Loading incidents…</p>
+          [0, 1].map((i) => (
+            <div
+              key={i}
+              className="h-36 animate-pulse rounded-xl border border-border bg-muted/50"
+            />
+          ))
         ) : incidents.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-            No active emergencies within 5 km right now.
-          </p>
+          <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
+            <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-safe/15">
+              <Radio className="size-5 text-safe" />
+            </span>
+            <p className="mt-2 text-sm font-semibold text-foreground">No incoming emergencies</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Nothing active within 5 km. New alerts appear here instantly.
+            </p>
+          </div>
         ) : (
           incidents.map((incident) => {
             const acked = Boolean(incident.acknowledged_at);

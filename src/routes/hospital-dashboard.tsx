@@ -47,19 +47,23 @@ function HospitalDashboard() {
   const [hospitalId, setHospitalId] = useState<string>("");
   const [incidents, setIncidents] = useState<HospitalIncident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hospitalsLoading, setHospitalsLoading] = useState(true);
   const [pending, setPending] = useState<string | null>(null);
 
   const hospital = hospitals.find((h) => h.id === hospitalId) ?? null;
 
   useEffect(() => {
+    setHospitalsLoading(true);
     void (async () => {
       const rows = await listHospitals();
       setHospitals(rows);
+      setHospitalsLoading(false);
       const connected = rows.find((h) => h.is_connected);
       if (connected) setHospitalId(connected.id);
       else setLoading(false);
     })();
   }, [user]);
+
 
   const refresh = useCallback(
     async (announce = false) => {

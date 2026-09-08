@@ -179,11 +179,22 @@ function HospitalDashboard() {
 
       <div className="mt-4 space-y-4 pb-6">
         {loading ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">Loading incidents…</p>
+          [0, 1].map((i) => (
+            <div
+              key={i}
+              className="h-36 animate-pulse rounded-xl border border-border bg-muted/50"
+            />
+          ))
         ) : incidents.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-            No active emergencies within 5 km right now.
-          </p>
+          <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
+            <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-safe/15">
+              <Radio className="size-5 text-safe" />
+            </span>
+            <p className="mt-2 text-sm font-semibold text-foreground">No incoming emergencies</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Nothing active within 5 km. New alerts appear here instantly.
+            </p>
+          </div>
         ) : (
           incidents.map((incident) => {
             const acked = Boolean(incident.acknowledged_at);

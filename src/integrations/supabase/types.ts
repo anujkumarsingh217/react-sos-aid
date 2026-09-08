@@ -121,6 +121,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          flagged: boolean
           id: string
           location: unknown
           priority: string
@@ -131,6 +132,7 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          flagged?: boolean
           id?: string
           location?: unknown
           priority?: string
@@ -141,6 +143,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          flagged?: boolean
           id?: string
           location?: unknown
           priority?: string
@@ -340,6 +343,7 @@ export type Database = {
           created_at: string
           id: string
           identity_verified: boolean
+          is_admin: boolean
           name: string
           phone_verified: boolean
           platform_user_id: string
@@ -349,6 +353,7 @@ export type Database = {
           created_at?: string
           id: string
           identity_verified?: boolean
+          is_admin?: boolean
           name: string
           phone_verified?: boolean
           platform_user_id: string
@@ -358,6 +363,7 @@ export type Database = {
           created_at?: string
           id?: string
           identity_verified?: boolean
+          is_admin?: boolean
           name?: string
           phone_verified?: boolean
           platform_user_id?: string

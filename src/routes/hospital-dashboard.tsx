@@ -135,7 +135,11 @@ function HospitalDashboard() {
         onChange={(e) => setHospitalId(e.target.value)}
         className="mt-1 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm focus:border-info focus:outline-none focus:ring-2 focus:ring-info/25"
       >
-        {hospitals.length === 0 && <option value="">No hospitals registered</option>}
+        {hospitals.length === 0 && (
+          <option value="">
+            {hospitalsLoading ? "Loading hospitals…" : "No hospitals available — sign in to view"}
+          </option>
+        )}
         {hospitals.map((h) => (
           <option key={h.id} value={h.id} disabled={!h.is_connected}>
             {h.name}
@@ -147,7 +151,11 @@ function HospitalDashboard() {
       {/* Network roster: connected vs non-connected at a glance */}
       <div className="mt-3 flex flex-wrap gap-2">
         {hospitals.length === 0 && (
-          <p className="text-[11px] text-muted-foreground">Loading hospital network…</p>
+          <p className="text-[11px] text-muted-foreground">
+            {hospitalsLoading
+              ? "Loading hospital network…"
+              : "No hospitals to show yet. Sign in to see the connected network."}
+          </p>
         )}
         {hospitals.map((h) => (
           <span
